@@ -13,7 +13,7 @@
         button { background: #0052cc; color: white; border: none; transition: background 0.2s; margin-bottom: 5px; }
         button:hover { background: #0047b3; }
         .details { font-family: monospace; font-size: 13px; white-space: pre-wrap; word-break: break-all; }
-        .filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+        .filters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
         .quirk-warn { color: #d93025; font-weight: bold; margin-top: 10px; display: none; padding: 10px; background: #fce8e6; border-radius: 4px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { text-align: left; padding: 6px; border-bottom: 1px solid #eee; }
@@ -24,6 +24,14 @@
     <h1>Chrome Media & Cast Test Page</h1>
     
     <div class="panel filters">
+        <div>
+            <label><strong>Expected to Work:</strong></label>
+            <select id="filter-working">
+                <option value="all">All</option>
+                <option value="true" selected>Yes (Working)</option>
+                <option value="false">No (Expected to Fail)</option>
+            </select>
+        </div>
         <div>
             <label><strong>Container:</strong></label>
             <select id="filter-ext"><option value="all">All</option></select>
@@ -81,6 +89,7 @@
         const errorMsg = document.getElementById("error-msg");
         const quirkMsg = document.getElementById("quirk-msg");
 
+        const filterWorking = document.getElementById("filter-working");
         const filterExt = document.getElementById("filter-ext");
         const filterVcodec = document.getElementById("filter-vcodec");
         const filterRes = document.getElementById("filter-res");
@@ -126,12 +135,18 @@
             const fExt = filterExt.value;
             const fVcodec = filterVcodec.value;
             const fRes = filterRes.value;
+            const fWorking = filterWorking.value;
 
             select.innerHTML = "";
             let count = 0;
 
             videoData.forEach(v => {
-                if ((fExt === "all" || v.ext === fExt) &&
+                let matchesWorking = true;
+                if (fWorking === "true") matchesWorking = !v.quirk;
+                else if (fWorking === "false") matchesWorking = v.quirk;
+
+                if (matchesWorking &&
+                    (fExt === "all" || v.ext === fExt) &&
                     (fVcodec === "all" || v.vcodec === fVcodec) &&
                     (fRes === "all" || v.resolution === fRes)) {
                     
@@ -171,7 +186,7 @@
             player.load();
         }
 
-        [filterExt, filterVcodec, filterRes].forEach(el => {
+        [filterWorking, filterExt, filterVcodec, filterRes].forEach(el => {
             el.addEventListener("change", updateList);
         });
 
